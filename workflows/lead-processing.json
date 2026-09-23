@@ -1,0 +1,1782 @@
+{
+  "name": "AI Lead Processing v2",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "500756c7-da1c-4261-b891-dd21c11db621",
+              "name": "status",
+              "value": "scoring_failed",
+              "type": "string"
+            },
+            {
+              "id": "6f92e99b-7d95-4d03-aa03-657f0dbdd979",
+              "name": "action",
+              "value": "manual_review",
+              "type": "string"
+            },
+            {
+              "id": "19f86c50-72a6-46b8-b96c-7bf5c8402531",
+              "name": "retry_required",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "183666db-357e-442a-a087-7d89f023f757",
+              "name": "error_message",
+              "value": "={{ $json.error.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3184,
+        512
+      ],
+      "id": "da31b600-4de3-493c-8b9a-b0ac850cd569",
+      "name": "Handle Scoring Failure"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e20a1d8b-6a2c-471f-b32a-55fbad11cc90",
+              "name": "=name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "5bbae577-f6e3-464c-ab79-e9393b4b1ecf",
+              "name": "=email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "46fb5cd5-4f49-4318-a804-5932186df997",
+              "name": "=company",
+              "value": "={{ $json.body.company }}",
+              "type": "string"
+            },
+            {
+              "id": "ed018920-1061-4892-bf21-724bf8ae4081",
+              "name": "=employees",
+              "value": "={{$json.body.employees}}",
+              "type": "number"
+            },
+            {
+              "id": "b23056e7-18b3-408f-be29-c00df1a0ad47",
+              "name": "=budget",
+              "value": "={{$json.body.budget}}",
+              "type": "number"
+            },
+            {
+              "id": "e9e7b152-dd37-4099-bd18-a48181ac5a18",
+              "name": "interest",
+              "value": "={{ $json.body.interest }}",
+              "type": "string"
+            },
+            {
+              "id": "26655e85-34d5-4392-9e12-c6dd22e82480",
+              "name": "idempotency_key",
+              "value": "={{ $json.body.idempotency_key }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -4400,
+        480
+      ],
+      "id": "72630a56-735e-4dfc-a432-adc5cc807b03",
+      "name": "Normalize Lead"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a business lead analyst.\n\nYour job is to understand the customer's stated business need.\n\nCustomer:\nName: {{ $json.name }}\nCompany: {{ $json.company }}\n\nCustomer's stated interest:\n{{ $json.interest }}\n\nAnalyze the customer's interest as the primary source of information.\n\nDetermine:\n- business_need: what problem or capability the customer is interested in\n- business_objective: the likely business outcome they want\n- recommended_action: the appropriate next step\n- questions: exactly three useful discovery questions specific to their stated interest\n\nDo not make assumptions about needs that are unrelated to the customer's stated interest.\n\nFor recommended_action, choose the best available option from the required schema."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_schema",
+              "name": "lead_analysis",
+              "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"business_need\": {\n      \"type\": \"string\"\n    },\n    \"business_objective\": {\n      \"type\": \"string\"\n    },\n    \"recommended_action\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"discovery_call\",\n        \"request_more_information\",\n        \"nurture\"\n      ]\n    },\n    \"questions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\n    \"business_need\",\n    \"business_objective\",\n    \"recommended_action\",\n    \"questions\"\n  ],\n  \"additionalProperties\": false\n}"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -3632,
+        832
+      ],
+      "id": "60d8d59b-b25a-45f3-bfac-ff4a45a6e5ef",
+      "name": "AI Lead Analysis",
+      "credentials": {
+        "openAiApi": {
+          "id": "UdvDf5UYzxdoEole",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": false
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3264,
+        816
+      ],
+      "id": "c8e3d851-5229-4740-bcdf-e5411307b2ef",
+      "name": "Merge Lead Intelligence"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0bb8880d-5f45-4ba7-805b-2a23257b1cd6",
+              "name": "name",
+              "value": "={{ $('Normalize Lead').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "a96a56e6-6a9a-4fcc-8412-35ec75e6f872",
+              "name": "email",
+              "value": "={{ $('Normalize Lead').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "a6483746-177c-4d3f-a917-ee12c1a618bf",
+              "name": "company",
+              "value": "={{ $('Normalize Lead').item.json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "824ff741-6d64-4f74-9c9c-398cbfe7b02b",
+              "name": "employees",
+              "value": "={{ $('Normalize Lead').item.json.employees }}",
+              "type": "number"
+            },
+            {
+              "id": "c8e3fe2f-3a5e-4fbb-aa9c-c7cd53fa89f2",
+              "name": "budget",
+              "value": "={{ $('Normalize Lead').item.json.budget }}",
+              "type": "number"
+            },
+            {
+              "id": "0670d31b-eb30-43bc-b3a7-896cd837aff7",
+              "name": "interest",
+              "value": "={{ $('Normalize Lead').item.json.interest }}",
+              "type": "string"
+            },
+            {
+              "id": "203a9c99-3840-4678-9b81-3ca0b78f7108",
+              "name": "idempotency_key",
+              "value": "={{ $('Normalize Lead').item.json.idempotency_key }}",
+              "type": "string"
+            },
+            {
+              "id": "3e45d28d-623d-4ffc-8841-5467a8c1fe2f",
+              "name": "score",
+              "value": "={{ $('Score Lead').item.json.score }}",
+              "type": "number"
+            },
+            {
+              "id": "d0ce8faa-cf17-4b5e-abd1-97da314903b3",
+              "name": "priority",
+              "value": "={{ $('Score Lead').item.json.priority }}",
+              "type": "string"
+            },
+            {
+              "id": "2f0b494f-5612-4860-9a73-20c0ba46a7c8",
+              "name": "business_need",
+              "value": "={{ $json.output[0].content[0].text.business_need }}",
+              "type": "string"
+            },
+            {
+              "id": "f9824443-6b1f-4048-8378-a3a5762d66a4",
+              "name": "business_objective",
+              "value": "={{ $json.output[0].content[0].text.business_objective }}",
+              "type": "string"
+            },
+            {
+              "id": "ef45e9a4-5550-4395-b37a-64865523b034",
+              "name": "recommended_action",
+              "value": "={{ $json.output[0].content[0].text.recommended_action }}",
+              "type": "string"
+            },
+            {
+              "id": "77eb1d71-e326-4492-8127-a0893752e847",
+              "name": "questions",
+              "value": "={{ { \"items\": $json.output[0].content[0].text.questions } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": "",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2816,
+        816
+      ],
+      "id": "8b4626ef-0108-4276-b8a9-e44754a453f7",
+      "name": "Build Enriched Lead"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a sales assistant for an AI automation consultancy.\n\nWrite a professional, concise follow-up email for the qualified business lead below.\n\nThe email should:\n- acknowledge the customer's stated business need\n- explain that we would like to understand their workflow in more detail\n- propose a short discovery call\n- use the supplied discovery questions naturally\n- avoid making promises about results\n- avoid inventing information\n- sound professional rather than aggressive or overly promotional\n\nLead information:\n\nName: {{ $json.name }}\nCompany: {{ $json.company }}\nInterest: {{ $json.interest }}\nBusiness need: {{ $json.business_need }}\nBusiness objective: {{ $json.business_objective }}\nRecommended action: {{ $json.recommended_action }}\nDiscovery questions: {{ JSON.stringify($json.questions.items) }}\n\nReturn only the requested structured output."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_schema",
+              "name": "sales_followup",
+              "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\"\n    },\n    \"email_body\": {\n      \"type\": \"string\"\n    },\n    \"call_to_action\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"email_body\",\n    \"call_to_action\"\n  ],\n  \"additionalProperties\": false\n}"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -2240,
+        768
+      ],
+      "id": "b4a370d7-5a5c-430d-ad28-90262b476e9c",
+      "name": "Generate Sales Follow-up",
+      "credentials": {
+        "openAiApi": {
+          "id": "UdvDf5UYzxdoEole",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bb439149-b0fc-4de5-8181-5c9215307173",
+              "name": "id",
+              "value": "={{ $('Save Scored Lead').item.json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "6c90e259-5ef6-488a-9fdb-f41c529941dc",
+              "name": "email",
+              "value": "={{ $('Normalize Lead').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "2712d482-b6b4-4744-8517-1709babeb786",
+              "name": "followup_subject",
+              "value": "={{ $json.output[0].content[0].text.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "a59d579e-0421-44f7-b8c2-90c0c72e21c3",
+              "name": "followup_email",
+              "value": "={{ $json.output[0].content[0].text.email_body }}",
+              "type": "string"
+            },
+            {
+              "id": "e01bb208-bf58-4f4f-b02d-7efb708348e8",
+              "name": "followup_call_to_action",
+              "value": "={{ $json.output[0].content[0].text.call_to_action }}",
+              "type": "string"
+            },
+            {
+              "id": "8ea68a71-37a1-40a3-ad21-9ffeffe7456f",
+              "name": "followup_status",
+              "value": "awaiting_approval",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1920,
+        768
+      ],
+      "id": "19f1d12d-6d7c-4ce6-a05b-ffb21046b1f8",
+      "name": "Build Follow-up Record"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "910b8a8d-8ec8-4393-b3b4-6e1edfea19f8",
+              "name": "=name",
+              "value": "={{ $('Normalize Lead').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "d28edbec-792b-487c-8039-a547f088cf23",
+              "name": "email",
+              "value": "={{ $('Normalize Lead').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "4a3b632d-26d1-4bfc-9499-b90e5daec8b9",
+              "name": "=company",
+              "value": "={{ $('Normalize Lead').item.json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "03f2f721-1bca-479d-82cf-7239c77aed38",
+              "name": "employees",
+              "value": "={{ $('Normalize Lead').item.json.employees }}",
+              "type": "number"
+            },
+            {
+              "id": "2ad6dd26-e46e-44d6-8b4e-283c596aadb0",
+              "name": "budget",
+              "value": "={{ $('Normalize Lead').item.json.budget }}",
+              "type": "number"
+            },
+            {
+              "id": "3bed9d97-b57d-471f-a4cd-6516149da761",
+              "name": "interest",
+              "value": "={{ $('Normalize Lead').item.json.interest }}",
+              "type": "string"
+            },
+            {
+              "id": "0ab5d92b-0c13-4810-a7ae-452177d29552",
+              "name": "idempotency_key",
+              "value": "={{ $('Normalize Lead').item.json.idempotency_key }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3616,
+        496
+      ],
+      "id": "087f05d5-ff52-4083-9486-bb7ae7f2dfce",
+      "name": "Restore Normalized Lead"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "889e5682-b6d9-4537-a5ff-89917e5553ab",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4624,
+        480
+      ],
+      "id": "4767df3d-af92-41d1-84b3-732ce0aebc95",
+      "name": "Receive Lead",
+      "webhookId": "889e5682-b6d9-4537-a5ff-89917e5553ab"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, idempotency_key, followup_status, created_at\nFROM leads\nWHERE idempotency_key = $1\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $json.idempotency_key }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -4224,
+        480
+      ],
+      "id": "53135f0e-968e-4d45-8ee2-26e22cafdded",
+      "name": "Find Existing Lead",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "WHbltawukQcNwLQX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "525dbe52-d9fc-46b1-bf50-4844f12bf559",
+              "leftValue": "={{ $json.id !== undefined }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -4000,
+        480
+      ],
+      "id": "c1ca3304-303f-4671-b48a-7418a3185421",
+      "name": "Duplicate Lead?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "48046033-75b8-4b84-b40c-3a104ace1644",
+              "name": "status",
+              "value": "duplicate",
+              "type": "string"
+            },
+            {
+              "id": "1743c671-b002-4719-8958-860a61e2a35c",
+              "name": "action",
+              "value": "skipped",
+              "type": "string"
+            },
+            {
+              "id": "f114f680-ae22-49cd-9e34-ed43a2a35697",
+              "name": "existing_lead_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7447c444-9d9d-49d9-b057-730690643d5a",
+              "name": "idempotency_key",
+              "value": "={{ $json.idempotency_key }}",
+              "type": "string"
+            },
+            {
+              "id": "1a062f7a-70e9-491f-9ffb-f968272dbd5a",
+              "name": "followup_status",
+              "value": "={{ $json.followup_status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3776,
+        384
+      ],
+      "id": "6fdb013b-3673-4ed5-ac34-83d1cb9b99cc",
+      "name": "Handle Duplicate Lead"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/score-lead",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "company",
+              "value": "={{ $json.company }}"
+            },
+            {
+              "name": "employees",
+              "value": "={{ $json.employees }}"
+            },
+            {
+              "name": "budget",
+              "value": "={{ $json.budget }}"
+            },
+            {
+              "name": "interest",
+              "value": "={{ $json.interest }}"
+            },
+            {
+              "name": "idempotency_key",
+              "value": "={{ $json.idempotency_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -3376,
+        496
+      ],
+      "id": "ea3c62e9-e2d6-42bd-8999-932f62220262",
+      "name": "Score Lead",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ef82dcc5-9736-4e9d-aa7a-a60eef94601b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "78f9f598-da36-4fa6-bade-b74b7a0722cc",
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "medium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0930a1ce-e808-4cb0-a044-ae5c83369fcf",
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "high",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2704,
+        464
+      ],
+      "id": "33c0ab84-22e8-448a-b427-b16753299e5c",
+      "name": "Route by Lead Priority"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a2bedd7-3d9c-4b54-981b-bc5080578c22",
+              "name": "action",
+              "value": "nurture_sequence",
+              "type": "string"
+            },
+            {
+              "id": "30514355-c700-4174-a388-a4baeb1eebec",
+              "name": "status",
+              "value": "nurture",
+              "type": "string"
+            },
+            {
+              "id": "a70f6751-4924-46b3-9d23-fa2b2d6c736b",
+              "name": "message",
+              "value": "Prepare Nurture",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2528,
+        320
+      ],
+      "id": "99fe85b5-254e-4a7e-903f-7f45ee943068",
+      "name": "Prepare Low-Priority Lead"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a7c63cf-b94f-4db8-8f81-12607cb2b6fc",
+              "name": "action",
+              "value": "immediate_sales_contact",
+              "type": "string"
+            },
+            {
+              "id": "9f88c8ff-90bd-40b8-b277-5ce8ed92775e",
+              "name": "status",
+              "value": "qualified",
+              "type": "string"
+            },
+            {
+              "id": "6a8ac744-a889-4b26-a531-aed19281e093",
+              "name": "message",
+              "value": "=High proirity lead: {{ $json.name }} from {{ $json.copmany }} - budget {{ $json.budget }}, score {{ $json.score }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2528,
+        672
+      ],
+      "id": "1af70a99-21f8-4886-a9db-9edd20f31763",
+      "name": "Prepare High-Priority Lead"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "leads",
+          "mode": "list",
+          "cachedResultName": "leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "email": "={{ $json.email }}",
+            "employees": "={{ $json.employees }}",
+            "budget": "={{ $json.budget }}",
+            "interest": "={{ $json.interest }}",
+            "score": "={{ $json.score }}",
+            "priority": "={{ $json.priority }}",
+            "status": "qualified",
+            "action": "immediate_sales_contact",
+            "company": "={{$json.company}}",
+            "business_need": "={{ $json.business_need }}",
+            "business_objective": "={{ $json.business_objective }}",
+            "recommended_action": "={{ $json.recommended_action }}",
+            "questions": "={{ $json.questions }}",
+            "retry_required": false,
+            "idempotency_key": "={{ $json.idempotency_key }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "employees",
+              "displayName": "employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "budget",
+              "displayName": "budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "retry_required",
+              "displayName": "retry_required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "business_need",
+              "displayName": "business_need",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "business_objective",
+              "displayName": "business_objective",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recommended_action",
+              "displayName": "recommended_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "questions",
+              "displayName": "questions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "followup_subject",
+              "displayName": "followup_subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "followup_email",
+              "displayName": "followup_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "followup_call_to_action",
+              "displayName": "followup_call_to_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "followup_status",
+              "displayName": "followup_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "followup_sent_at",
+              "displayName": "followup_sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "followup_error",
+              "displayName": "followup_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "idempotency_key",
+              "displayName": "idempotency_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -2352,
+        480
+      ],
+      "id": "bf8387d8-90c7-4ffe-a7f5-cb9f1e6fda9c",
+      "name": "Save Scored Lead",
+      "credentials": {
+        "postgres": {
+          "id": "WHbltawukQcNwLQX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "leads",
+          "mode": "list",
+          "cachedResultName": "leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "retry_required": "={{ $json.retry_required }}",
+            "name": "={{ $json.name }}",
+            "email": "={{ $json.email }}",
+            "company": "={{ $json.company }}",
+            "employees": "={{ $json.employees }}",
+            "budget": "={{ $json.budget }}",
+            "interest": "={{ $json.intrset }}",
+            "score": "={{ $json.score }}",
+            "priority": "={{ $json.priority }}",
+            "status": "={{ $json.status }}",
+            "action": "={{ $json.action }}",
+            "error_message": "={{ $json.error_message }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "employees",
+              "displayName": "employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "budget",
+              "displayName": "budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retry_required",
+              "displayName": "retry_required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -2992,
+        512
+      ],
+      "id": "77f73a9e-90fe-43af-9fbf-e2f9b3716f5d",
+      "name": "Save Scoring Failure",
+      "credentials": {
+        "postgres": {
+          "id": "WHbltawukQcNwLQX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "leads",
+          "mode": "list",
+          "cachedResultName": "leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "followup_subject": "={{ $json.followup_subject }}",
+            "followup_email": "={{ $json.followup_email }}",
+            "followup_call_to_action": "={{ $json.followup_call_to_action }}",
+            "id": "={{ $json.id }}",
+            "followup_status": "={{ $json.followup_status }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "employees",
+              "displayName": "employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "budget",
+              "displayName": "budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retry_required",
+              "displayName": "retry_required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "business_need",
+              "displayName": "business_need",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "business_objective",
+              "displayName": "business_objective",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "recommended_action",
+              "displayName": "recommended_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "questions",
+              "displayName": "questions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "followup_subject",
+              "displayName": "followup_subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "followup_email",
+              "displayName": "followup_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "followup_call_to_action",
+              "displayName": "followup_call_to_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "followup_status",
+              "displayName": "followup_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "followup_sent_at",
+              "displayName": "followup_sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1712,
+        768
+      ],
+      "id": "b8c94a46-8491-4619-acbc-28d5ba137e30",
+      "name": "Save Follow-up Draft",
+      "credentials": {
+        "postgres": {
+          "id": "WHbltawukQcNwLQX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "25d362cf-e5f2-456c-acf5-78d8a9c273f0",
+              "name": "action",
+              "value": "follow_up",
+              "type": "string"
+            },
+            {
+              "id": "7ea74667-2e5e-48db-9582-06edf69d346e",
+              "name": "status",
+              "value": "qualified",
+              "type": "string"
+            },
+            {
+              "id": "d7186a1b-7d19-4f7e-ac1c-311df4ebbb6d",
+              "name": "message",
+              "value": "Prepare Follow-up",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2528,
+        480
+      ],
+      "id": "b8080226-403f-4c20-8229-81b1af24862b",
+      "name": "Prepare Midium-Priority Lead"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Handle Scoring Failure": {
+      "main": [
+        [
+          {
+            "node": "Save Scoring Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Lead": {
+      "main": [
+        [
+          {
+            "node": "Find Existing Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Lead Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge Lead Intelligence",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Lead Intelligence": {
+      "main": [
+        [
+          {
+            "node": "Build Enriched Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Enriched Lead": {
+      "main": [
+        [
+          {
+            "node": "Route by Lead Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Sales Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Build Follow-up Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Follow-up Record": {
+      "main": [
+        [
+          {
+            "node": "Save Follow-up Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Normalized Lead": {
+      "main": [
+        [
+          {
+            "node": "Score Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Lead": {
+      "main": [
+        [
+          {
+            "node": "Normalize Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing Lead": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate Lead?": {
+      "main": [
+        [
+          {
+            "node": "Handle Duplicate Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Restore Normalized Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Lead": {
+      "main": [
+        [
+          {
+            "node": "Merge Lead Intelligence",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Lead Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Scoring Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Lead Priority": {
+      "main": [
+        [
+          {
+            "node": "Prepare Low-Priority Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Midium-Priority Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare High-Priority Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Low-Priority Lead": {
+      "main": [
+        [
+          {
+            "node": "Save Scored Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare High-Priority Lead": {
+      "main": [
+        [
+          {
+            "node": "Save Scored Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Scored Lead": {
+      "main": [
+        [
+          {
+            "node": "Generate Sales Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Midium-Priority Lead": {
+      "main": [
+        [
+          {
+            "node": "Save Scored Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "bad9925d-1073-46b6-bbba-71b6e185eb4e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "20ddd343ef1e90461145284baa6bbb3b48aea203a6b2fd715e38510b63951be3"
+  },
+  "nodeGroups": [],
+  "id": "j97fwE7qxkOSYGi8",
+  "tags": []
+}
