@@ -3,6 +3,10 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
 
 class Lead(BaseModel):
     name: str

@@ -2,6 +2,7 @@ services:
 
   postgres:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,11 +20,19 @@ services:
   lead-scoring-api:
     build:
       context: ./lead-scoring-api
+    restart: unless-stopped
     ports:
       - "${LEAD_SCORING_API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
   n8n:
     image: docker.n8n.io/n8nio/n8n
+    restart: unless-stopped
     ports:
       - "5678:5678"
     volumes:
@@ -32,7 +41,7 @@ services:
       postgres:
         condition: service_healthy
       lead-scoring-api:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   postgres-data:
