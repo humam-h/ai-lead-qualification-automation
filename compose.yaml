@@ -20,7 +20,7 @@ services:
     build:
       context: ./lead-scoring-api
     ports:
-      - "8000:8000"
+      - "${LEAD_SCORING_API_PORT:-8000}:8000"
 
   n8n:
     image: docker.n8n.io/n8nio/n8n
@@ -36,9 +36,7 @@ services:
 
 volumes:
   postgres-data:
-    external: true
     name: postgres-data
 
   n8n-data:
-    external: true
     name: n8n_data

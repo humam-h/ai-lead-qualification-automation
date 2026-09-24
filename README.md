@@ -52,3 +52,21 @@ ai-lead-qualification-automation/
     ├── followup-approval.json
     └── retry-failed-followups.json
 
+
+## Local Development
+
+### Prerequisites
+
+Before running the project, make sure the following are installed:
+
+- Docker and Docker Compose
+- Git
+- An OpenAI API account for the AI workflow nodes
+- A Gmail account or compatible n8n Gmail credential for email delivery
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/humam-h/ai-lead-qualification-automation.git
+cd ai-lead-qualification-automation
+
