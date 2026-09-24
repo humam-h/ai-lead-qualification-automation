@@ -267,7 +267,7 @@
         "responses": {
           "values": [
             {
-              "content": "=You are a sales assistant for an AI automation consultancy.\n\nWrite a professional, concise follow-up email for the qualified business lead below.\n\nThe email should:\n- acknowledge the customer's stated business need\n- explain that we would like to understand their workflow in more detail\n- propose a short discovery call\n- use the supplied discovery questions naturally\n- avoid making promises about results\n- avoid inventing information\n- sound professional rather than aggressive or overly promotional\n\nLead information:\n\nName: {{ $json.name }}\nCompany: {{ $json.company }}\nInterest: {{ $json.interest }}\nBusiness need: {{ $json.business_need }}\nBusiness objective: {{ $json.business_objective }}\nRecommended action: {{ $json.recommended_action }}\nDiscovery questions: {{ JSON.stringify($json.questions.items) }}\n\nReturn only the requested structured output."
+              "content": "=You are a sales assistant for an AI automation consultancy.\n\nWrite a professional, concise follow-up email for the qualified business lead below.\n\nThe email should:\n- acknowledge the customer's stated business need\n- explain that we would like to understand their workflow in more detail\n- propose a short discovery call\n- use the supplied discovery questions naturally\n- avoid making promises about results\n- avoid inventing information\n- sound professional rather than aggressive or overly promotional\n\nLead information:\n\nName: {{ $json.name }}\nCompany: {{ $json.company }}\nInterest: {{ $json.interest }}\nBusiness need: {{ $json.business_need }}\nBusiness objective: {{ $json.business_objective }}\nRecommended action: {{ $json.recommended_action }}\nDiscovery questions: {{ JSON.stringify($json.questions.items) }}\n\nReturn only the requested structured output.\n\nEnd the email exactly with this signature:\n\nBest regards,\n\nAlex Morgan\nAutomation Consultant\nNorthstar IT Services\n\nDo not generate placeholders such as [Your Name], [Your Position], or [Company Name]."
             }
           ]
         },
@@ -1771,7 +1771,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "020f8736-aa96-40cf-9f94-a35f6e72f671",
+  "versionId": "8cdd0be3-3a7f-4591-aa71-6d56e88513af",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "20ddd343ef1e90461145284baa6bbb3b48aea203a6b2fd715e38510b63951be3"
