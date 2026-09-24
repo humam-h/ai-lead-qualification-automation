@@ -50,7 +50,8 @@ ai-lead-qualification-automation/
 └── workflows/
     ├── lead-processing.json
     ├── followup-approval.json
-    └── retry-failed-followups.json
+    └── retry-failed-follow.json
+```
 
 ## Business Use Case
 
