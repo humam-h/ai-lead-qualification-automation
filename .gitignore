@@ -33,3 +33,6 @@ secrets/
 # Temporary files
 tmp/
 temp/
+
+# Local database backups
+backups/

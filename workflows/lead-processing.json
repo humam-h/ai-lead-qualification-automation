@@ -533,7 +533,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:8000/score-lead",
+        "url": "http://lead-scoring-api:8000/score-lead",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -1771,7 +1771,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "bad9925d-1073-46b6-bbba-71b6e185eb4e",
+  "versionId": "020f8736-aa96-40cf-9f94-a35f6e72f671",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "20ddd343ef1e90461145284baa6bbb3b48aea203a6b2fd715e38510b63951be3"
